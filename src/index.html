@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>WebSocket server from scratch</title>
+
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        padding: 16px;
+      }
+
+      #wrapper {
+        max-width: 520px;
+        margin: 0 auto;
+      }
+
+      h1 {
+        text-align: center;
+        margin-bottom: 16px;
+      }
+
+      #messages {
+        border: 1px solid #000;
+        border-radius: 1px;
+        padding: 8px;
+        min-height: 120px;
+        display: flex;
+        flex-direction: column;
+        align-items: start;
+      }
+
+      #messages .message {
+        max-width: 80%;
+        border-radius: 4px;
+        margin-bottom: 8px;
+        padding: 4px;
+      }
+
+      #messages .message--received {
+        background-color: darkgrey;
+      }
+
+      #messages .message--sent {
+        background-color: dodgerblue;
+        margin-left: auto;
+      }
+
+      form {
+        display: flex;
+        margin-top: 8px;
+      }
+
+      form #msg-to-send {
+        flex-grow: 1;
+        margin-right: 8px;
+        border: 1px solid #000;
+        border-radius: 1px;
+        padding: 4px;
+      }
+
+      form button {
+        width: 64px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="wrapper">
+      <h1>WebSocket server from scratch</h1>
+
+      <section id="messages"></section>
+
+      <form id="send-msg-form">
+        <textarea rows="2" id="msg-to-send" required></textarea>
+        <button>send</button>
+      </form>
+    </div>
+
+    <script>
+      const socket = new WebSocket("ws://localhost:3000");
+
+      socket.addEventListener("open", (e) => {
+        console.log("WebSocket connected!");
+      });
+
+      socket.addEventListener("message", (e) => {
+        console.log("WebSocket message from server: ", e.data);
+        createMessageBubble(e.data, false);
+      });
+
+      socket.addEventListener("error", (e) => {
+        console.error("WebSocket error: ", e);
+      });
+
+      socket.addEventListener("close", (e) => {
+        console.log("WebSocket connection closed!");
+      });
+
+      const $msgToSend = document.getElementById("msg-to-send");
+
+      document
+        .getElementById("send-msg-form")
+        .addEventListener("submit", function sendMessage(e) {
+          e.preventDefault();
+
+          const message = $msgToSend.value.trim();
+          if (!message) {
+            alert("type something!");
+            return;
+          }
+
+          // send the message to server
+          socket.send(message);
+
+          // create message bubble
+          createMessageBubble(message);
+
+          // clear the field
+          $msgToSend.value = "";
+        });
+
+      const $messagesContainer = document.getElementById("messages");
+      function createMessageBubble(message, sentByMe = true) {
+        const $msgBubble = document.createElement("p");
+        $msgBubble.classList.add("message");
+
+        if (sentByMe) {
+          $msgBubble.classList.add("message--sent");
+        } else {
+          $msgBubble.classList.add("message--received");
+        }
+
+        $msgBubble.textContent = message;
+
+        $messagesContainer.appendChild($msgBubble);
+      }
+    </script>
+  </body>
+</html>
