@@ -173,14 +173,14 @@ function processDataFrame(socket) {
   // unmask the payload & convert it to string
   let payload = maskedPayload.map((e, i) => e ^ mask[i % 4]);
 
-  if (opcode === OP_TEXT) {
-    const text = new TextDecoder().decode(payload);
-    console.log("_DEBUG_ text:", text);
-  }
-
-  // if (connectedSockets.size <= 1) {
-  //   return;
+  // if (opcode === OP_TEXT) {
+  //   const text = new TextDecoder().decode(payload);
+  //   console.log("_DEBUG_ text:", text);
   // }
+
+  if (connectedSockets.size <= 1) {
+    return;
+  }
 
   // create WebSocket frame to broadcast message to connected sockets
   const resFrame = createResponseFrame(payload);
